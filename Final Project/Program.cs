@@ -1,4 +1,4 @@
-using Final_Project.Models;
+﻿using Final_Project.Models;
 using Final_Project.Services;
 using Octokit;
 using Spectre.Console;
@@ -19,12 +19,12 @@ namespace Final_Project;
 ///   8. Loops back to step 2 if they want another, or shows a goodbye and quits
 ///
 /// TIER SYSTEM (see PhraseDatabase for the full phrase lists):
-///   0%            ? MEGA BUM
-///   0% &lt; x &lt; 1%  ? bone spurs curse
-///   1% � 9.99%    ? super bum, call yo fricking uber
-///   10% � 29.99%  ? bum ahh insult
-///   30% � 69.99%  ? did alr ig
-///   ? 70%         ? goodest boy / girl / pal
+///   0%            → MEGA BUM
+///   0% &lt; x &lt; 1%  → bone spurs curse
+///   1% – 9.99%    → super bum, call yo fricking uber
+///   10% – 29.99%  → bum ahh insult
+///   30% – 69.99%  → did alr ig
+///   ≥ 70%         → goodest boy / girl / pal
 /// </summary>
 public static class Program
 {
@@ -35,10 +35,10 @@ public static class Program
     /// <param name="args">Command-line arguments (not used).</param>
     public static async Task Main(string[] args)
     {
-        // ?? Service setup ????????????????????????????????????????????????????
-        // GitHubService  � talks to the GitHub API
-        // PhraseDatabase � picks and formats the roast/praise phrase
-        // AIService      � sends the phrase to the local AI for enhancement
+        // ── Service setup ────────────────────────────────────────────────────
+        // GitHubService  — talks to the GitHub API
+        // PhraseDatabase — picks and formats the roast/praise phrase
+        // AIService      — sends the phrase to the local AI for enhancement
         GitHubService gitHubService = new();
         PhraseDatabase phraseDatabase = new();
         AIService aiService = new();
@@ -46,20 +46,20 @@ public static class Program
         // Show the decorative startup banner (clears the screen first)
         PrintBanner();
 
-        // ?? Main loop ????????????????????????????????????????????????????????
+        // ── Main loop ────────────────────────────────────────────────────────
         // Keeps running until the user chooses "Exit" at the end-of-run prompt
         bool keepRunning = true;
         while (keepRunning)
         {
             // Ask the user to paste a GitHub repo URL
-            string repositoryUrl = AnsiConsole.Ask<string>("\n[bold green]?? Enter a GitHub repository URL:[/]");
+            string repositoryUrl = AnsiConsole.Ask<string>("\n[bold green]Enter a GitHub repository URL:[/]");
 
             try
             {
                 // Split the URL into owner ("ajin67") and repo name ("Final-Project")
                 (string owner, string repository) = gitHubService.ParseRepositoryUrl(repositoryUrl);
 
-                // Fetch and analyse contributions � shown with a spinner so it doesn't look frozen.
+                // Fetch and analyse contributions — shown with a spinner so it doesn't look frozen.
                 // This hits the API for each commit (up to 200), so it can take a moment.
                 IReadOnlyList<ContributionResult> results = await AnsiConsole
                     .Status()
@@ -72,33 +72,29 @@ public static class Program
                 // Handle the edge case of a repo with no commits at all
                 if (results.Count == 0)
                 {
-                    AnsiConsole.MarkupLine("[yellow]??  No contributors found to analyze.[/]");
+                    AnsiConsole.MarkupLine("[yellow]No contributors found to analyze.[/]");
                 }
                 else
                 {
                     // Print a visual divider and section header above the table
                     PrintSectionDivider();
-                    AnsiConsole.MarkupLine($"[bold cyan]?? Results for:[/] [bold white]{owner}/{repository}[/]");
+                    AnsiConsole.MarkupLine($"[bold cyan]Results for:[/] [bold white]{owner}/{repository}[/]");
                     PrintSectionDivider();
 
-                    // ?? Build the results table ??????????????????????????????
-                    // Spectre.Console's Table class handles column alignment,
-                    // borders, and markup colour codes automatically.
                     var resultTable = new Table()
-                        .Border(TableBorder.Double)           // Double-line border looks sharp
+                        .Border(TableBorder.Double)
                         .BorderStyle(Style.Parse("cyan"))
-                        .Title($"[bold yellow]?  {repository.ToUpperInvariant()} CONTRIBUTION REPORT  ?[/]")
-                        .Caption("[dim]Roast-grade AI analysis � no feelings were considered[/]");
+                        .Title($"[bold yellow]{repository.ToUpperInvariant()} CONTRIBUTION REPORT[/]")
+                        .Caption("[dim]Roast-grade AI analysis -- no feelings were considered[/]");
 
-                    // Define each column with a label and alignment
-                    resultTable.AddColumn(new TableColumn("[bold white]?? Contributor[/]").Centered());
-                    resultTable.AddColumn(new TableColumn("[bold green]? Additions[/]").RightAligned());
-                    resultTable.AddColumn(new TableColumn("[bold red]? Deletions[/]").RightAligned());
-                    resultTable.AddColumn(new TableColumn("[bold magenta]? Importance[/]").RightAligned());
-                    resultTable.AddColumn(new TableColumn("[bold yellow]?? Contribution %[/]").RightAligned());
-                    resultTable.AddColumn(new TableColumn("[bold white]?? Final Verdict[/]"));
+                    resultTable.AddColumn(new TableColumn("[bold white]Contributor[/]").Centered());
+                    resultTable.AddColumn(new TableColumn("[bold green]Additions[/]").RightAligned());
+                    resultTable.AddColumn(new TableColumn("[bold red]Deletions[/]").RightAligned());
+                    resultTable.AddColumn(new TableColumn("[bold magenta]Importance[/]").RightAligned());
+                    resultTable.AddColumn(new TableColumn("[bold yellow]Contribution %[/]").RightAligned());
+                    resultTable.AddColumn(new TableColumn("[bold white]Final Verdict[/]"));
 
-                    // ?? Add one row per contributor ??????????????????????????
+                    // ── Add one row per contributor ──────────────────────────
                     foreach (ContributionResult result in results)
                     {
                         // Step 1: Build the base roast/praise phrase for this contributor's tier
@@ -114,7 +110,7 @@ public static class Program
                             .Spinner(Spinner.Known.Star)
                             .SpinnerStyle(Style.Parse("yellow"))
                             .StartAsync(
-                                $"[yellow]?? Roasting [bold]{result.ContributorName}[/]...[/]",
+                                $"[yellow]Roasting [bold]{result.ContributorName}[/]...[/]",
                                 async _ =>
                                 {
                                     aiPhrase = await aiService.EnhancePhraseAsync(
@@ -125,7 +121,7 @@ public static class Program
                         // so the table is visually colour-coded at a glance
                         string tierColor = GetTierColor(result.ContributionPercent);
 
-                        // Markup.Escape() is important � it prevents contributor names
+                        // Markup.Escape() is important — it prevents contributor names
                         // or AI phrases that contain "[" from breaking Spectre's markup parser
                         resultTable.AddRow(
                             $"[{tierColor}]{Markup.Escape(result.ContributorName)}[/]",
@@ -146,45 +142,41 @@ public static class Program
             }
             catch (ArgumentException ex)
             {
-                // User entered a bad URL � show the specific problem
-                AnsiConsole.MarkupLine($"[red]? Invalid URL:[/] {Markup.Escape(ex.Message)}");
+                // User entered a bad URL — show the specific problem
+                AnsiConsole.MarkupLine($"[red]Invalid URL:[/] {Markup.Escape(ex.Message)}");
             }
             catch (ApiException ex)
             {
-                // GitHub API returned an error (e.g. repo not found, rate limited)
-                AnsiConsole.MarkupLine($"[red]? GitHub API error:[/] {Markup.Escape(ex.Message)}");
+                AnsiConsole.MarkupLine($"[red]GitHub API error:[/] {Markup.Escape(ex.Message)}");
             }
             catch (Exception ex)
             {
-                // Catch-all for anything unexpected � always show the message so it's debuggable
-                AnsiConsole.MarkupLine($"[red]? Unexpected error:[/] {Markup.Escape(ex.Message)}");
+                AnsiConsole.MarkupLine($"[red]Unexpected error:[/] {Markup.Escape(ex.Message)}");
             }
 
-            // ?? End-of-run prompt ????????????????????????????????????????????
-            // After results (or an error), ask what the user wants to do next.
-            // SelectionPrompt gives arrow-key navigation � much nicer than typing.
+            // ── End-of-run prompt ────────────────────────────────────────────
+            // Ask the user whether to check another repo or quit.
+            // We use plain Console.ReadLine() here instead of Spectre's SelectionPrompt
+            // because SelectionPrompt relies on arrow keys + Enter, which is unreliable
+            // across terminals and was causing the loop to always exit regardless of
+            // what the user picked. A simple y/n read works everywhere.
             AnsiConsole.WriteLine();
-            string choice = AnsiConsole.Prompt(
-                new SelectionPrompt<string>()
-                    .Title("[bold yellow]What would you like to do next?[/]")
-                    .HighlightStyle(Style.Parse("cyan"))
-                    .AddChoices(
-                        "??  Check another project",
-                        "??  Exit"));
+            AnsiConsole.MarkupLine("[bold yellow]Check another project? (y/n):[/] ");
+            string input = Console.ReadLine()?.Trim().ToLower() ?? "n";
 
-            // If they picked anything other than "Check another project", we exit the loop
-            keepRunning = choice.StartsWith("??");
+            // Keep looping only if the user typed y or yes
+            keepRunning = input == "y" || input == "yes";
         }
 
         // Show a friendly goodbye message before the program closes
         PrintGoodbye();
     }
 
-    // ????????????????????????????????????????????????????????????????????????
+    // ════════════════════════════════════════════════════════════════════════
     // PRIVATE HELPER METHODS
     // Each helper is responsible for one visual element of the UI.
     // Keeping them separate makes Main() easier to read.
-    // ????????????????????????????????????????????????????????????????????????
+    // ════════════════════════════════════════════════════════════════════════
 
     /// <summary>
     /// Clears the console and renders the startup banner.
@@ -200,7 +192,7 @@ public static class Program
         // A framed panel acts as a subtitle / description block under the title
         var panel = new Panel(
             "[bold white]GitHub Contribution Analyzer[/]\n" +
-            "[dim]Celebrating heroes. Exposing bums. No mercy.[/]")
+            "[dim] Exposing bums.[/]")
         {
             Border = BoxBorder.Double,
             BorderStyle = Style.Parse("cyan"),
@@ -225,12 +217,12 @@ public static class Program
     /// what each tier colour means.
     ///
     /// Tier colours match what GetTierColor() returns:
-    ///   gold1      ? 70%+       goodest one
-    ///   green      ? 30�69.99%  did alr ig
-    ///   yellow     ? 10�29.99%  bum ahh
-    ///   darkorange ? 1�9.99%    super bum
-    ///   red        ? &lt; 1%    bone spurs
-    ///   bold red   ? 0%         MEGA BUM
+    ///   gold1      → 70%+       goodest one
+    ///   green      → 30–69.99%  did alr ig
+    ///   yellow     → 10–29.99%  bum ahh
+    ///   darkorange → 1–9.99%    super bum
+    ///   red        → &lt; 1%    bone spurs
+    ///   bold red   → 0%         MEGA BUM
     /// </summary>
     private static void PrintTierLegend()
     {
@@ -243,13 +235,13 @@ public static class Program
             .AddColumn(new TableColumn("[dim]Range[/]").Centered())
             .AddColumn(new TableColumn("[dim]Verdict[/]"));
 
-        // Rows go from best ? worst so users scan top-down naturally
-        legend.AddRow("[bold gold1]? 70%[/]", "[bold gold1]Goodest boy / girl / pal ??[/]");
-        legend.AddRow("[bold green]30 � 69.99%[/]", "[bold green]Did alr ig ?[/]");
-        legend.AddRow("[bold yellow]10 � 29.99%[/]", "[bold yellow]Bum ahh ??[/]");
-        legend.AddRow("[bold darkorange]1 � 9.99%[/]", "[bold darkorange]Super bum, call yo uber ??[/]");
-        legend.AddRow("[bold red]0.01 � 0.99%[/]", "[bold red]Bone spurs curse ??[/]");
-        legend.AddRow("[bold red]0%[/]", "[bold red]MEGA BUM ??[/]");
+        // Rows go from best → worst so users scan top-down naturally
+        legend.AddRow("[bold gold1]>= 70%[/]", "[bold gold1]Goodest boy / girl / pal[/]");
+        legend.AddRow("[bold green]30 - 69.99%[/]", "[bold green]Did alr ig[/]");
+        legend.AddRow("[bold yellow]10 - 29.99%[/]", "[bold yellow]Bum ahh[/]");
+        legend.AddRow("[bold darkorange]1 - 9.99%[/]", "[bold darkorange]Super bum, call yo uber[/]");
+        legend.AddRow("[bold red]0.01 - 0.99%[/]", "[bold red]Bone spurs curse[/]");
+        legend.AddRow("[bold red]0%[/]", "[bold red]MEGA BUM[/]");
 
         AnsiConsole.Write(legend);
     }
@@ -280,23 +272,23 @@ public static class Program
     /// so you can tell a contributor's tier at a glance.
     ///
     /// Matches the tier system exactly:
-    ///   0%            ? bold red     (MEGA BUM)
-    ///   0% to &lt;1%  ? red          (bone spurs)
-    ///   1�9.99%       ? darkorange   (super bum)
-    ///   10�29.99%     ? yellow       (bum ahh)
-    ///   30�69.99%     ? green        (did alr ig)
-    ///   ? 70%         ? gold1        (goodest one)
+    ///   0%            → bold red     (MEGA BUM)
+    ///   0% to &lt;1%  → red          (bone spurs)
+    ///   1–9.99%       → darkorange   (super bum)
+    ///   10–29.99%     → yellow       (bum ahh)
+    ///   30–69.99%     → green        (did alr ig)
+    ///   ≥ 70%         → gold1        (goodest one)
     /// </summary>
-    /// <param name="percent">The contributor's percentage (0�100).</param>
+    /// <param name="percent">The contributor's percentage (0–100).</param>
     /// <returns>A Spectre.Console colour/style string for use inside markup tags.</returns>
     private static string GetTierColor(decimal percent) =>
         percent switch
         {
-            0m => "bold red",      // MEGA BUM � loudest colour
+            0m => "bold red",      // MEGA BUM — loudest colour
             > 0m and < 1m => "red",           // bone spurs
             >= 1m and < 10m => "darkorange",    // super bum
             >= 10m and < 30m => "yellow",        // bum ahh
             >= 30m and < 70m => "green",         // did alr ig
-            _ => "gold1"          // goodest one � shiniest colour
+            _ => "gold1"          // goodest one — shiniest colour
         };
 }
