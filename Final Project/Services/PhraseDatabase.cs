@@ -150,7 +150,7 @@ public sealed class PhraseDatabase
             "You're the goodest boy, {name}! {percent}% — you basically ARE {project}.",
             "You're the goodest pal, {name}! {percent}% on {project}. We are not worthy.",
             "Goodest boy energy: {name} carried {project} with {percent}%. Someone get them a treat.",
-            "Goodest girl status confirmed: {name} did {percent}% on {project}. Icon.",
+            "Goodest boy status confirmed: {name} did {percent}% on {project}. Icon.",
             "You're the goodest one, {name}. {percent}% on {project}. The repo thanks you."
         ];
     }
